@@ -25,6 +25,7 @@ long lastMsg = 0;
 char msg[23];
 
 int wifimode = 0;
+int mqtt_setting = 0;
 
 void setup() {
   pinMode(2, OUTPUT);
@@ -33,9 +34,24 @@ void setup() {
   Serial.begin(9600);
   server.begin();
   setup_wifi();
-  //setup_wifi();
+  setup_mqtt();
+}
+
+void setup_mqtt() {
+  Serial.println("Reading EEPROM MQTT (MAX=20 BYTE)");
+  for (int i = 96; i < 116; ++i)
+  {
+    mqtt_server += char(EEPROM.read(i));
+  }
+  Serial.print("MQTT SERVER IP: ");
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
+  if (client.connected()) {
+    mqtt_setting = 1;
+  } else {
+    mqtt_setting = 0;
+  }
+
 }
 
 
@@ -74,7 +90,7 @@ void setup_wifi() {
   }
   Serial.print("PASSWORD NAME : ");
   Serial.println(password);
-  
+
   WiFi.begin(ssid, password);
   while ( c < 15 ) {
     if (WiFi.status() != WL_CONNECTED) {
@@ -135,8 +151,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
   if ((char)payload[0] == '3') {
-    
-  }else{
+
+  } else {
     digitalWrite(2, (char)payload[0]);
   }
   //} else {
@@ -146,6 +162,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void reconnect() {
+  if(mqtt_setting==1)
   while (!client.connected()) {
     if (client.connect(topic)) {
       client.subscribe(topic);
@@ -209,7 +226,9 @@ void createhttp() {
     String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
     s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html><form action='setting'>";
     if (wifimode == 1)
-      s += "網路環境設定:" + st + "<input type='password' name='natepass'/><input type='submit' value='設定' />";
+      s += "網路環境設定:" + st + "<input type='password' name='natepass'/><br>";
+    if(mqtt_setting==0)
+      s += "推播伺服器設定:" + st + "<input type='text' name='mqtt'/><input type='submit' value='設定' />";
     s += "</form></html>\r\n\r\n";
     //Serial.println("Sending 200");
   }
@@ -286,8 +305,10 @@ void loop() {
   if (wifimode == 0) {
     if (!client.connected()) {
       reconnect();
+      
     }
     client.loop();
+    
     //send_light_state();
   }
   createhttp();
