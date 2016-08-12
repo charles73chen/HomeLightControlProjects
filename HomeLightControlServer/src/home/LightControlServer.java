@@ -33,6 +33,7 @@ public class LightControlServer {
 	final static GpioPinDigitalOutput GPIO_01 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01);
 	final static GpioPinDigitalInput pir = gpio.provisionDigitalInputPin(RaspiPin.GPIO_00, "PIR",
 			PinPullResistance.PULL_DOWN);
+	JSONObject json = new JSONObject();
 
 	public static void main(String[] args) {
 
@@ -61,8 +62,6 @@ public class LightControlServer {
 
 					String str = new String(mqttMessage.getPayload());
 					System.out.println("msg: " + str);
-					org.json.JSONTokener tokener = new JSONTokener(str);
-
 					if (Light2pi.GPIO_01.getValue().equals(topic)) {
 						if (str.equals(home.model.Action.ON.getValue())) {
 							GPIO_01.setState(true);
@@ -70,25 +69,25 @@ public class LightControlServer {
 						if (str.equals(home.model.Action.OFF.getValue())) {
 							GPIO_01.setState(false);
 						}
-						if (str.equals(home.model.Action.STATE.getValue())) {
-							//更新JSON
-						}
-					}
 
-					if ("/home/book/irswitch".equals(topic)) {
+					}
+					//home.light.state
+					//if ("home.light.state.update".equals(topic)) {
+					//	org.json.JSONTokener tokener = new JSONTokener(str);
+					//	JSONObject lightJson = new JSONObject(jsonTokener);
+					//	json.put(lightJson.get("id"), lightJson.get("value"))
+					//}
+
+					if (Light2pi.紅外線感應開關.getValue().equals(topic)) {
 						if (str.equals("on")) {
 							pir.addListener(new GpioPinListenerDigital() {
 								public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
 									// System.out.println(event.getState().getName());
 									if (event.getState().isHigh()) {
-										// System.out.println("Motion
-										// Detected!");
 										GPIO_01.setState(true);
 									}
 
 									if (event.getState().isLow()) {
-										// System.out.println("All is
-										// quiet...");
 										GPIO_01.setState(false);
 									}
 
@@ -110,8 +109,8 @@ public class LightControlServer {
 			});
 			sampleClient.connect();
 
-			String[] t = { Light2pi.GPIO_01.getValue(), Light2pi.紅外線感應開關.getValue(), Light2pi.客廳電視插頭.getValue() };
-			;
+			String[] t = { Light2pi.GPIO_01.getValue(), Light2pi.紅外線感應開關.getValue(), Light2pi.客廳電視插頭.getValue(),"home.light.state" };
+
 			sampleClient.subscribe(t);
 		} catch (Exception me) {
 			// System.out.println("reason "+me.getReasonCode());

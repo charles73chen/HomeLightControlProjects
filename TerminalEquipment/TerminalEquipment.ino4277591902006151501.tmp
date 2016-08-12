@@ -11,7 +11,6 @@ const char* ssid = "124-2F";
 const char* password = "28831530";
 const char* mqtt_server = "192.168.1.108";
 const char* topic = "home.liveroom.tv";
-
 //const char* apssid = "MoonAP";
 const char* passphrase = "12345678";
 String st;
@@ -134,11 +133,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.print((char)payload[i]);
   }
   Serial.println();
-  if ((char)payload[0] == '3') {
-    
-  }else{
-    digitalWrite(2, (char)payload[0]);
-  }
+  ///if ((char)payload[0] == '1') {
+  digitalWrite(2, (char)payload[0]);
   //} else {
   //  digitalWrite(2, 0);
   // }
