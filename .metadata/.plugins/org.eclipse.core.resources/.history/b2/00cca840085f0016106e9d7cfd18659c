@@ -1,0 +1,25 @@
+package home.model;
+
+public enum light2pi {
+	GPIO_01("/home/book/GPIO_01");
+	
+	private final String value;
+
+	private light2pi(String value) {
+		this.value = value;
+	}
+
+	public String getValue() {
+		return this.value;
+	}
+
+	public static light2pi ByValue(final String num) {
+
+		for (light2pi e : light2pi.values()) {
+			if (e.name() .equals(num)) {
+				return e;
+			}
+		}
+		return null;
+	}
+}
